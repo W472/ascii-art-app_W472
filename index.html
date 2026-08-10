@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>图片转字符画</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      text-align: center;
+      background: #1e1e1e;
+      color: #ddd;
+    }
+
+    h1 {
+      color: #ffd700;
+    }
+
+    #uploadForm {
+      margin: 20px;
+    }
+
+    #result {
+      background: #000;
+      color: #0f0;
+      font-family: 'Courier New', monospace;
+      font-size: 6px;
+      /* 非常小才能显示完整字符画 */
+      line-height: 1;
+      white-space: pre;
+      overflow-x: auto;
+      padding: 10px;
+      margin-top: 20px;
+      text-align: left;
+      border: 1px solid #333;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background: #ffd700;
+      border: none;
+      border-radius: 5px;
+      color: #1e1e1e;
+      font-weight: bold;
+    }
+
+    input[type="file"] {
+      margin: 10px;
+      color: #ddd;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🎨 图片转字符画</h1>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" id="imageInput" accept="image/*" required>
+    <br>
+    <button type="submit">生成字符画</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('imageInput');
+      const file = fileInput.files[0];
+      if (!file) {
+        alert('请先选择一张图片');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      resultDiv.textContent = '处理中...';
+
+      try {
+        // 注意：这里后端地址是你 Flask 运行的地址
+        const response = await fetch('http://localhost:5000/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+        if (data.ascii) {
+          resultDiv.textContent = data.ascii;
+        } else {
+          resultDiv.textContent = '错误：' + (data.error || '未知错误');
+        }
+      } catch (err) {
+        resultDiv.textContent = '网络错误或后端未启动：' + err.message;
+      }
+    });
+  </script>
+</body>
+
+</html>
